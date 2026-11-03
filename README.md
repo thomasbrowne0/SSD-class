@@ -9,13 +9,13 @@ CRA-focused vulnerability tracker – exam project for Secure Software Developme
 
 Requires the .NET 10 SDK and Docker.
 
-Start the database:
+Start the database and Keycloak:
 
 ```sh
-docker compose up -d db
+docker compose up -d db keycloak
 ```
 
-Run the app (applies database migrations on startup):
+Run the app on http://localhost:5133 (applies database migrations on startup):
 
 ```sh
 dotnet run --project src/VulnTracker
@@ -25,6 +25,31 @@ Or run everything in containers (app on http://localhost:5000):
 
 ```sh
 docker compose up -d --build
+```
+
+## Login
+
+Login goes through Keycloak (OpenID Connect). The realm `vulntracker` is imported from
+[keycloak/vulntracker-realm.json](keycloak/vulntracker-realm.json) on first start.
+
+Test users (password = username), one per spec role:
+
+| User | Role |
+|---|---|
+| `analyst` | analyst |
+| `developer` | developer |
+| `pm` | pm |
+| `auditor` | auditor |
+
+Keycloak admin console: http://localhost:8080/admin (admin / admin).
+
+All of these, and the client secret `dev-only-client-secret`, are local dev values only.
+In production, set `Oidc__Authority`, `Oidc__ClientSecret` and `ConnectionStrings__Default` as environment variables.
+
+Realm import only happens when Keycloak's data is empty. After editing the realm file, recreate the container:
+
+```sh
+docker compose up -d --force-recreate keycloak
 ```
 
 ## Test

@@ -1,0 +1,90 @@
+{
+  "realm": "vulntracker",
+  "enabled": true,
+  "roles": {
+    "realm": [
+      { "name": "analyst" },
+      { "name": "developer" },
+      { "name": "pm" },
+      { "name": "auditor" }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "vulntracker-app",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "dev-only-client-secret",
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "implicitFlowEnabled": false,
+      "redirectUris": [
+        "http://localhost:5133/signin-oidc",
+        "http://localhost:5000/signin-oidc"
+      ],
+      "attributes": {
+        "post.logout.redirect.uris": "http://localhost:5133/signout-callback-oidc##http://localhost:5000/signout-callback-oidc",
+        "pkce.code.challenge.method": "S256"
+      },
+      "protocolMappers": [
+        {
+          "name": "realm roles",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "config": {
+            "claim.name": "roles",
+            "multivalued": "true",
+            "jsonType.label": "String",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true"
+          }
+        }
+      ]
+    }
+  ],
+  "users": [
+    {
+      "username": "analyst",
+      "enabled": true,
+      "email": "analyst@vulntracker.test",
+      "emailVerified": true,
+      "firstName": "Test",
+      "lastName": "Analyst",
+      "credentials": [{ "type": "password", "value": "analyst", "temporary": false }],
+      "realmRoles": ["analyst"]
+    },
+    {
+      "username": "developer",
+      "enabled": true,
+      "email": "developer@vulntracker.test",
+      "emailVerified": true,
+      "firstName": "Test",
+      "lastName": "Developer",
+      "credentials": [{ "type": "password", "value": "developer", "temporary": false }],
+      "realmRoles": ["developer"]
+    },
+    {
+      "username": "pm",
+      "enabled": true,
+      "email": "pm@vulntracker.test",
+      "emailVerified": true,
+      "firstName": "Test",
+      "lastName": "PM",
+      "credentials": [{ "type": "password", "value": "pm", "temporary": false }],
+      "realmRoles": ["pm"]
+    },
+    {
+      "username": "auditor",
+      "enabled": true,
+      "email": "auditor@vulntracker.test",
+      "emailVerified": true,
+      "firstName": "Test",
+      "lastName": "Auditor",
+      "credentials": [{ "type": "password", "value": "auditor", "temporary": false }],
+      "realmRoles": ["auditor"]
+    }
+  ]
+}

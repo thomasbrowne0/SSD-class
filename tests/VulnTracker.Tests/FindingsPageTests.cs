@@ -1,25 +1,19 @@
-using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.Extensions.Configuration;
+using System.Net;
 using Microsoft.Extensions.DependencyInjection;
 using VulnTracker.Data;
 
 namespace VulnTracker.Tests;
 
-// Uses a separate database so tests don't touch dev data. Needs Postgres running (docker compose up db).
-public class TestAppFactory : WebApplicationFactory<Program>
-{
-    protected override void ConfigureWebHost(Microsoft.AspNetCore.Hosting.IWebHostBuilder builder)
-    {
-        builder.ConfigureAppConfiguration((_, config) => config.AddInMemoryCollection(new Dictionary<string, string?>
-        {
-            ["ConnectionStrings:Default"] =
-                "Host=localhost;Port=5432;Database=vulntracker_test;Username=postgres;Password=postgres",
-        }));
-    }
-}
-
 public class FindingsPageTests(TestAppFactory factory) : IClassFixture<TestAppFactory>
 {
+    [Fact]
+    public async Task Index_requires_login()
+    {
+        var response = await factory.CreateAnonymousClient().GetAsync("/");
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
     [Fact]
     public async Task Index_lists_saved_findings()
     {
@@ -39,7 +33,7 @@ public class FindingsPageTests(TestAppFactory factory) : IClassFixture<TestAppFa
             await db.SaveChangesAsync();
         }
 
-        var html = await factory.CreateClient().GetStringAsync("/");
+        var html = await factory.CreateClientAs("analyst", "analyst").GetStringAsync("/");
 
         Assert.Contains(title, html);
     }
