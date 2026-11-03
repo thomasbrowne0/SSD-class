@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+using VulnTracker.Authorization;
 using VulnTracker.Data;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -18,7 +18,7 @@ builder.Services
         options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
         options.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
     })
-    .AddCookie()
+    .AddCookie(options => options.AccessDeniedPath = "/AccessDenied")
     .AddOpenIdConnect(options =>
     {
         var oidc = builder.Configuration.GetSection("Oidc");
@@ -36,11 +36,8 @@ builder.Services
         options.RequireHttpsMetadata = !builder.Environment.IsDevelopment();
     });
 
-builder.Services.AddAuthorization(options =>
-{
-    // Every page requires login unless it is marked [AllowAnonymous].
-    options.FallbackPolicy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
-});
+// AUTH-02: access control rules are in the Authorization folder.
+builder.Services.AddVulnTrackerAuthorization();
 
 var app = builder.Build();
 
