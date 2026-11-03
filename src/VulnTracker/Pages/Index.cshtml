@@ -1,0 +1,29 @@
+@page
+@model VulnTracker.Pages.IndexModel
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>Vulnerability Tracker</title>
+</head>
+<body>
+    <h1>Findings</h1>
+    <table>
+        <thead>
+            <tr><th>Title</th><th>Asset</th><th>Severity</th><th>Status</th><th>Discovered</th></tr>
+        </thead>
+        <tbody>
+            @foreach (var finding in Model.Findings)
+            {
+                <tr>
+                    <td>@finding.Title</td>
+                    <td>@finding.AffectedAsset</td>
+                    <td>@finding.Severity</td>
+                    <td>@finding.Status</td>
+                    <td>@finding.DiscoveryDate</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</body>
+</html>

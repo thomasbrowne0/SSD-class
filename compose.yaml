@@ -1,0 +1,28 @@
+# Local development only. The passwords here are dev defaults, not real secrets.
+services:
+  db:
+    image: postgres:18
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: vulntracker
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 5s
+      retries: 10
+
+  app:
+    build: .
+    environment:
+      ConnectionStrings__Default: "Host=db;Port=5432;Database=vulntracker;Username=postgres;Password=postgres"
+    ports:
+      - "127.0.0.1:5000:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  db-data:
