@@ -1,0 +1,23 @@
+@page "{id:int}"
+@model VulnTracker.Pages.Findings.AssignModel
+@{
+    ViewData["Title"] = "Assign finding";
+}
+<h1>Assign: @Model.Title</h1>
+<p>Only users who have logged in at least once can be picked.</p>
+<form method="post">
+    <p>
+        <label asp-for="Input.AssigneeId"></label><br />
+        <select asp-for="Input.AssigneeId" asp-items="Model.UserOptions">
+            <option value="">Nobody</option>
+        </select>
+        <span asp-validation-for="Input.AssigneeId"></span>
+    </p>
+    <p>
+        <label asp-for="Input.DueDate"></label><br />
+        <input asp-for="Input.DueDate" type="date" />
+        <span asp-validation-for="Input.DueDate"></span>
+    </p>
+    <button type="submit">Save</button>
+    <a asp-page="Details" asp-route-id="@Model.Id">Cancel</a>
+</form>

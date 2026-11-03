@@ -1,36 +1,56 @@
 @page
 @model VulnTracker.Pages.IndexModel
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8" />
-    <title>Vulnerability Tracker</title>
-</head>
-<body>
-    <p>
-        Signed in as <strong>@User.Identity?.Name</strong>
-        (roles: @string.Join(", ", User.FindAll("roles").Select(c => c.Value)))
-    </p>
-    <form method="post" asp-page="/Logout">
-        <button type="submit">Log out</button>
-    </form>
-    <h1>Findings</h1>
-    <table>
-        <thead>
-            <tr><th>Title</th><th>Asset</th><th>Severity</th><th>Status</th><th>Discovered</th></tr>
-        </thead>
-        <tbody>
-            @foreach (var finding in Model.Findings)
-            {
-                <tr>
-                    <td>@finding.Title</td>
-                    <td>@finding.AffectedAsset</td>
-                    <td>@finding.Severity</td>
-                    <td>@finding.Status</td>
-                    <td>@finding.DiscoveryDate</td>
-                </tr>
-            }
-        </tbody>
-    </table>
-</body>
-</html>
+@inject IAuthorizationService Authorization
+@{
+    ViewData["Title"] = "Findings";
+}
+<h1>Findings</h1>
+
+@if ((await Authorization.AuthorizeAsync(User, Policies.CreateFinding)).Succeeded)
+{
+    <p><a asp-page="/Findings/Create">New finding</a></p>
+}
+
+<form method="get">
+    <label>Status
+        <select asp-for="Status" asp-items="Html.GetEnumSelectList<FindingStatus>()">
+            <option value="">Any</option>
+        </select>
+    </label>
+    <label>Severity
+        <select asp-for="Severity" asp-items="Html.GetEnumSelectList<Severity>()">
+            <option value="">Any</option>
+        </select>
+    </label>
+    <label>Assigned to
+        <select asp-for="AssigneeId" asp-items="Model.UserOptions">
+            <option value="">Anyone</option>
+        </select>
+    </label>
+    <label>Asset <input asp-for="Asset" /></label>
+    <button type="submit">Filter</button>
+    <a asp-page="/Index">Clear</a>
+</form>
+
+<table>
+    <thead>
+        <tr>
+            <th>Title</th><th>Asset</th><th>Severity</th><th>Status</th>
+            <th>Assigned to</th><th>Due</th><th>Discovered</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var finding in Model.Findings)
+        {
+            <tr>
+                <td><a asp-page="/Findings/Details" asp-route-id="@finding.Id">@finding.Title</a></td>
+                <td>@finding.AffectedAsset</td>
+                <td>@finding.Severity</td>
+                <td>@finding.Status</td>
+                <td>@(finding.Assignee?.Username ?? "-")</td>
+                <td>@finding.DueDate</td>
+                <td>@finding.DiscoveryDate</td>
+            </tr>
+        }
+    </tbody>
+</table>

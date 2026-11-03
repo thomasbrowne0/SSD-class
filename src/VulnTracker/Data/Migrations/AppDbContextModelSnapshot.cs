@@ -22,6 +22,22 @@ namespace VulnTracker.Data.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("VulnTracker.Data.AppUser", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Username")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Users");
+                });
+
             modelBuilder.Entity("VulnTracker.Data.Finding", b =>
                 {
                     b.Property<int>("Id")
@@ -72,7 +88,18 @@ namespace VulnTracker.Data.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("AssigneeId");
+
                     b.ToTable("Findings");
+                });
+
+            modelBuilder.Entity("VulnTracker.Data.Finding", b =>
+                {
+                    b.HasOne("VulnTracker.Data.AppUser", "Assignee")
+                        .WithMany()
+                        .HasForeignKey("AssigneeId");
+
+                    b.Navigation("Assignee");
                 });
 #pragma warning restore 612, 618
         }

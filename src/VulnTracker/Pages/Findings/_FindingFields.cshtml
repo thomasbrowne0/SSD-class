@@ -1,0 +1,28 @@
+@model VulnTracker.Pages.Findings.FindingInput
+@* Shared by Create and Edit. Field names are prefixed with "Input." by the caller. *@
+<div asp-validation-summary="ModelOnly"></div>
+<p>
+    <label asp-for="Title"></label><br />
+    <input asp-for="Title" size="60" />
+    <span asp-validation-for="Title"></span>
+</p>
+<p>
+    <label asp-for="Description"></label><br />
+    <textarea asp-for="Description" rows="6" cols="60"></textarea>
+    <span asp-validation-for="Description"></span>
+</p>
+<p>
+    <label asp-for="AffectedAsset"></label><br />
+    <input asp-for="AffectedAsset" />
+    <span asp-validation-for="AffectedAsset"></span>
+</p>
+<p>
+    <label asp-for="Severity"></label><br />
+    <select asp-for="Severity" asp-items="Html.GetEnumSelectList<Severity>()"></select>
+    <span asp-validation-for="Severity"></span>
+</p>
+<p>
+    <label asp-for="DiscoveryDate"></label><br />
+    <input asp-for="DiscoveryDate" type="date" />
+    <span asp-validation-for="DiscoveryDate"></span>
+</p>

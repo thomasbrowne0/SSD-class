@@ -1,0 +1,16 @@
+@page "{id:int}"
+@model VulnTracker.Pages.Findings.EditModel
+@{
+    ViewData["Title"] = "Edit finding";
+}
+<h1>Edit finding</h1>
+<form method="post">
+    <partial name="_FindingFields" for="Input" />
+    <p>
+        <label asp-for="Input.Status"></label><br />
+        <select asp-for="Input.Status" asp-items="Model.StatusOptions"></select>
+        <span asp-validation-for="Input.Status"></span>
+    </p>
+    <button type="submit">Save</button>
+    <a asp-page="Details" asp-route-id="@Model.Id">Cancel</a>
+</form>

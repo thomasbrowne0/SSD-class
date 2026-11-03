@@ -1,16 +1,7 @@
 @page
 @model VulnTracker.Pages.AccessDeniedModel
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8" />
-    <title>Access denied</title>
-</head>
-<body>
-    <h1>Access denied</h1>
-    <p>Your account doesn't have a role that allows this. Ask a PM to give you access.</p>
-    <form method="post" asp-page="/Logout">
-        <button type="submit">Log out</button>
-    </form>
-</body>
-</html>
+@{
+    ViewData["Title"] = "Access denied";
+}
+<h1>Access denied</h1>
+<p>Your account doesn't have a role that allows this. Ask a PM to give you access.</p>

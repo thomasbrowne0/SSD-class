@@ -34,6 +34,9 @@ builder.Services
         options.TokenValidationParameters.RoleClaimType = "roles";
         // Local Keycloak runs on plain http.
         options.RequireHttpsMetadata = !builder.Environment.IsDevelopment();
+        // Remember who has logged in, so they can be picked as assignee.
+        options.Events.OnTokenValidated = context => AppUser.SaveLoginAsync(
+            context.HttpContext.RequestServices.GetRequiredService<AppDbContext>(), context.Principal!);
     });
 
 // AUTH-02: access control rules are in the Authorization folder.

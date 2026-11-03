@@ -43,6 +43,8 @@ Test users (password = username), one per spec role:
 
 Keycloak admin console: http://localhost:8080/admin (admin / admin).
 
+A user must log in once before findings can be assigned to them (the app records Keycloak users on login).
+
 All of these, and the client secret `dev-only-client-secret`, are local dev values only.
 In production, set `Oidc__Authority`, `Oidc__ClientSecret` and `ConnectionStrings__Default` as environment variables.
 

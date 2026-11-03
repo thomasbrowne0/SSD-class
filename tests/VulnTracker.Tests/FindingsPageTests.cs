@@ -1,10 +1,11 @@
 using System.Net;
-using Microsoft.Extensions.DependencyInjection;
 using VulnTracker.Data;
 
 namespace VulnTracker.Tests;
 
-public class FindingsPageTests(TestAppFactory factory) : IClassFixture<TestAppFactory>
+// The findings list (Index page).
+[Collection(AppCollection.Name)]
+public class FindingsPageTests(TestAppFactory factory)
 {
     [Fact]
     public async Task Index_requires_login()
@@ -25,43 +26,55 @@ public class FindingsPageTests(TestAppFactory factory) : IClassFixture<TestAppFa
     [Fact]
     public async Task Index_lists_saved_findings()
     {
-        var title = await AddFinding(assigneeId: null);
+        var finding = await factory.AddFinding();
 
         var html = await factory.CreateClientAs("analyst", "analyst").GetStringAsync("/");
 
-        Assert.Contains(title, html);
+        Assert.Contains(finding.Title, html);
     }
 
     [Fact]
     public async Task Index_shows_developer_only_their_assigned_findings()
     {
-        var developerId = $"dev-{Guid.NewGuid()}";
-        var assigned = await AddFinding(assigneeId: developerId);
-        var notAssigned = await AddFinding(assigneeId: null);
+        var developerId = TestAppFactory.UniqueId("dev");
+        var assigned = await factory.AddFinding(assigneeId: developerId);
+        var notAssigned = await factory.AddFinding();
 
         var html = await factory.CreateClientAs(developerId, "developer").GetStringAsync("/");
 
-        Assert.Contains(assigned, html);
-        Assert.DoesNotContain(notAssigned, html);
+        Assert.Contains(assigned.Title, html);
+        Assert.DoesNotContain(notAssigned.Title, html);
     }
 
-    // Returns the unique title of the saved finding.
-    private async Task<string> AddFinding(string? assigneeId)
+    [Fact]
+    public async Task Index_filters_by_severity_and_asset()
     {
-        var title = $"SQL injection in login {Guid.NewGuid()}";
-        using var scope = factory.Services.CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        db.Findings.Add(new Finding
-        {
-            Title = title,
-            Description = "Login form concatenates input into SQL.",
-            AffectedAsset = "auth-service",
-            Severity = Severity.High,
-            DiscoveryDate = new DateOnly(2026, 11, 3),
-            Source = FindingSource.Internal,
-            AssigneeId = assigneeId,
-        });
-        await db.SaveChangesAsync();
-        return title;
+        var asset = TestAppFactory.UniqueId("payments-api");
+        var high = await factory.AddFinding(severity: Severity.High, asset: asset);
+        var low = await factory.AddFinding(severity: Severity.Low, asset: asset);
+        var otherAsset = await factory.AddFinding(severity: Severity.High);
+
+        var html = await factory.CreateClientAs("analyst", "analyst")
+            .GetStringAsync($"/?severity=High&asset={asset.ToUpperInvariant()}");
+
+        Assert.Contains(high.Title, html);
+        Assert.DoesNotContain(low.Title, html);
+        Assert.DoesNotContain(otherAsset.Title, html);
+    }
+
+    [Fact]
+    public async Task Index_filters_by_status_and_assignee()
+    {
+        var developerId = TestAppFactory.UniqueId("dev");
+        var match = await factory.AddFinding(assigneeId: developerId, status: FindingStatus.InProgress);
+        var otherStatus = await factory.AddFinding(assigneeId: developerId, status: FindingStatus.New);
+        var unassigned = await factory.AddFinding(status: FindingStatus.InProgress);
+
+        var html = await factory.CreateClientAs("pm", "pm")
+            .GetStringAsync($"/?status=InProgress&assigneeId={developerId}");
+
+        Assert.Contains(match.Title, html);
+        Assert.DoesNotContain(otherStatus.Title, html);
+        Assert.DoesNotContain(unassigned.Title, html);
     }
 }

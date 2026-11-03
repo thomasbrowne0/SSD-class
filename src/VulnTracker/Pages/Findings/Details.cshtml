@@ -1,0 +1,31 @@
+@page "{id:int}"
+@model VulnTracker.Pages.Findings.DetailsModel
+@{
+    ViewData["Title"] = Model.Finding.Title;
+    var finding = Model.Finding;
+}
+<h1>@finding.Title</h1>
+<p>
+    @if (Model.CanEdit)
+    {
+        <a asp-page="Edit" asp-route-id="@finding.Id">Edit details / status</a>
+    }
+    @if (Model.CanAssign)
+    {
+        <a asp-page="Assign" asp-route-id="@finding.Id">Assign</a>
+    }
+</p>
+<dl>
+    <dt>Status</dt><dd>@finding.Status</dd>
+    <dt>Severity</dt><dd>@finding.Severity</dd>
+    <dt>Affected asset/component</dt><dd>@finding.AffectedAsset</dd>
+    <dt>Discovery date</dt><dd>@finding.DiscoveryDate</dd>
+    <dt>Source</dt><dd>@finding.Source</dd>
+    <dt>Assigned to</dt><dd>@(finding.Assignee?.Username ?? "-")</dd>
+    <dt>Due date</dt><dd>@(finding.DueDate?.ToString() ?? "-")</dd>
+    @if (finding.ReporterEmail is not null)
+    {
+        <dt>Reporter email</dt><dd>@finding.ReporterEmail</dd>
+    }
+    <dt>Description</dt><dd style="white-space: pre-wrap">@finding.Description</dd>
+</dl>

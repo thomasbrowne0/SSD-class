@@ -28,6 +28,8 @@ public class Finding
     [MaxLength(100)]
     public string? AssigneeId { get; set; }
 
+    public AppUser? Assignee { get; set; }
+
     public DateOnly? DueDate { get; set; }
 
     // Only set for external reports (spec §3). Personal data, so it will be encrypted too.

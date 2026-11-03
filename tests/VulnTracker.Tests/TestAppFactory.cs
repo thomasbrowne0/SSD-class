@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using System.Text.Encodings.Web;
+using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -8,8 +9,16 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using VulnTracker.Data;
 
 namespace VulnTracker.Tests;
+
+// All test classes that use the app share one instance, so they don't race to create the test database.
+[CollectionDefinition(Name)]
+public class AppCollection : ICollectionFixture<TestAppFactory>
+{
+    public const string Name = "App";
+}
 
 // Uses a separate database so tests don't touch dev data. Needs Postgres running (docker compose up -d db).
 // Replaces Keycloak login with a fake scheme, so tests can pick the user and roles per request.
@@ -43,6 +52,67 @@ public class TestAppFactory : WebApplicationFactory<Program>
 
     public HttpClient CreateAnonymousClient() =>
         CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
+
+    // Unique id so tests sharing the database don't see each other's data.
+    public static string UniqueId(string prefix) => $"{prefix}-{Guid.NewGuid()}";
+
+    public async Task<AppUser> AddUser(string id)
+    {
+        await using var db = OpenDb();
+        var user = new AppUser { Id = id, Username = id };
+        db.Users.Add(user);
+        await db.SaveChangesAsync();
+        return user;
+    }
+
+    public async Task<Finding> AddFinding(
+        string? assigneeId = null,
+        Severity severity = Severity.High,
+        string? asset = null,
+        FindingStatus status = FindingStatus.New)
+    {
+        await using var db = OpenDb();
+        if (assigneeId is not null && await db.Users.FindAsync(assigneeId) is null)
+        {
+            db.Users.Add(new AppUser { Id = assigneeId, Username = assigneeId });
+        }
+        var finding = new Finding
+        {
+            Title = UniqueId("SQL injection in login"),
+            Description = "Login form concatenates input into SQL.",
+            AffectedAsset = asset ?? "auth-service",
+            Severity = severity,
+            DiscoveryDate = new DateOnly(2026, 11, 3),
+            Source = FindingSource.Internal,
+            Status = status,
+            AssigneeId = assigneeId,
+        };
+        db.Findings.Add(finding);
+        await db.SaveChangesAsync();
+        return finding;
+    }
+
+    public async Task<Finding?> GetFinding(int id)
+    {
+        await using var db = OpenDb();
+        return await db.Findings.FindAsync(id);
+    }
+
+    private AppDbContext OpenDb() => Services.CreateScope().ServiceProvider.GetRequiredService<AppDbContext>();
+}
+
+public static class FormExtensions
+{
+    // Razor Pages require an antiforgery token on POST, so load the form first and send its token back.
+    public static async Task<HttpResponseMessage> SubmitFormAsync(
+        this HttpClient client, string url, Dictionary<string, string> fields)
+    {
+        var html = await client.GetStringAsync(url);
+        var token = Regex.Match(html, "name=\"__RequestVerificationToken\" type=\"hidden\" value=\"([^\"]+)\"");
+        Assert.True(token.Success, "No antiforgery token in form");
+        fields["__RequestVerificationToken"] = token.Groups[1].Value;
+        return await client.PostAsync(url, new FormUrlEncodedContent(fields));
+    }
 }
 
 public class TestAuthHandler(

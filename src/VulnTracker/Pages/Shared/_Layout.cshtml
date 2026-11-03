@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>@ViewData["Title"] - VulnTracker</title>
+</head>
+<body>
+    <header>
+        <a asp-page="/Index">Findings</a>
+        @if (User.Identity?.IsAuthenticated == true)
+        {
+            <span>
+                | Signed in as <strong>@User.Identity.Name</strong>
+                (roles: @string.Join(", ", User.FindAll("roles").Select(c => c.Value)))
+            </span>
+            <form method="post" asp-page="/Logout" style="display: inline">
+                <button type="submit">Log out</button>
+            </form>
+        }
+    </header>
+    <main>
+        @RenderBody()
+    </main>
+</body>
+</html>

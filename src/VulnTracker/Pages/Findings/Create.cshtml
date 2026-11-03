@@ -1,0 +1,10 @@
+@page
+@model VulnTracker.Pages.Findings.CreateModel
+@{
+    ViewData["Title"] = "New finding";
+}
+<h1>New finding</h1>
+<form method="post">
+    <partial name="_FindingFields" for="Input" />
+    <button type="submit">Create</button>
+</form>
