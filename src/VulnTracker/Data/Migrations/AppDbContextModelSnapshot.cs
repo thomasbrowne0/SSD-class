@@ -66,8 +66,7 @@ namespace VulnTracker.Data.Migrations
                         .HasColumnType("date");
 
                     b.Property<string>("ReporterEmail")
-                        .HasMaxLength(320)
-                        .HasColumnType("character varying(320)");
+                        .HasColumnType("text");
 
                     b.Property<string>("Severity")
                         .IsRequired()
@@ -83,8 +82,7 @@ namespace VulnTracker.Data.Migrations
 
                     b.Property<string>("Title")
                         .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 

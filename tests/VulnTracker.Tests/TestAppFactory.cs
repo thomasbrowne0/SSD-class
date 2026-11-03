@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using VulnTracker.Data;
 
@@ -96,6 +97,25 @@ public class TestAppFactory : WebApplicationFactory<Program>
     {
         await using var db = OpenDb();
         return await db.Findings.FindAsync(id);
+    }
+
+    // Title is encrypted, so it can't be searched in SQL. Loading everything is fine for test data.
+    public async Task<Finding?> FindByTitle(string title)
+    {
+        await using var db = OpenDb();
+        return (await db.Findings.ToListAsync()).SingleOrDefault(f => f.Title == title);
+    }
+
+    // The value exactly as stored in the database, without decryption.
+    public async Task<string?> RawColumn(int findingId, string column)
+    {
+        await using var db = OpenDb();
+        // Column names can't be SQL parameters. Here they only come from test code, never from user input.
+#pragma warning disable EF1002
+        return await db.Database
+            .SqlQueryRaw<string?>($"SELECT \"{column}\" AS \"Value\" FROM \"Findings\" WHERE \"Id\" = {{0}}", findingId)
+            .SingleAsync();
+#pragma warning restore EF1002
     }
 
     private AppDbContext OpenDb() => Services.CreateScope().ServiceProvider.GetRequiredService<AppDbContext>();

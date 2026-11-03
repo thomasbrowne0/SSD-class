@@ -7,10 +7,10 @@ public class Finding
 {
     public int Id { get; set; }
 
-    [MaxLength(200)]
+    // Title, Description and ReporterEmail are encrypted in the database (FIND-11, see AppDbContext).
+    // No MaxLength on them: the ciphertext is longer than the text. Forms limit the input length.
     public required string Title { get; set; }
 
-    // Will be encrypted in W44 (FIND-11).
     public required string Description { get; set; }
 
     [MaxLength(200)]
@@ -32,8 +32,7 @@ public class Finding
 
     public DateOnly? DueDate { get; set; }
 
-    // Only set for external reports (spec §3). Personal data, so it will be encrypted too.
-    [MaxLength(320)]
+    // Only set for external reports (spec §3). Personal data (GDPR).
     public string? ReporterEmail { get; set; }
 }
 

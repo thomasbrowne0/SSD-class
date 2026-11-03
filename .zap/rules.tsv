@@ -1,0 +1,17 @@
+# ZAP baseline rules for the DAST gate in CI. Any warning not listed here fails the build.
+# Format: <alert id> <TAB> IGNORE <TAB> (reason)   or   <alert id> <TAB> OUTOFSCOPE <TAB> <url regex>
+
+# False positive: Razor HTML-encodes all output, and the reflected value is the user's own form input.
+10031	IGNORE	(User Controllable HTML Element Attribute)
+# Informational only.
+10049	IGNORE	(Non-Storable Content)
+# Informational only: it is the antiforgery cookie.
+10112	IGNORE	(Session Management Response Identified)
+# Only the OIDC correlation/nonce cookies. They must be sent on the cross-site form_post from Keycloak.
+10054	IGNORE	(Cookie with SameSite Attribute None)
+
+# "/" redirects anonymous users to Keycloak's login page. ZAP follows the redirect and reports
+# Keycloak's own headers and scripts under "/". Keycloak is a separate product, not scanned here.
+10055	OUTOFSCOPE	^http://localhost:5000/$
+10063	OUTOFSCOPE	^http://localhost:5000/$
+10109	OUTOFSCOPE	^http://localhost:5000/$

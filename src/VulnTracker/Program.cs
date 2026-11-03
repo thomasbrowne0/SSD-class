@@ -4,10 +4,13 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using VulnTracker.Authorization;
 using VulnTracker.Data;
+using VulnTracker.Security;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRazorPages();
+// FIND-11: keys come from configuration (environment variables in production), never the database.
+builder.Services.AddSingleton(sp => FieldEncryptor.FromConfiguration(sp.GetRequiredService<IConfiguration>()));
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("Default")));
 
@@ -48,6 +51,28 @@ using (var scope = app.Services.CreateScope())
 {
     scope.ServiceProvider.GetRequiredService<AppDbContext>().Database.Migrate();
 }
+
+// Keycloak's origin as the browser sees it. Only differs from Oidc:Authority when the app reaches
+// Keycloak by another host name (docker compose).
+var keycloakOrigin = new Uri(app.Configuration["Oidc:BrowserAuthority"] ?? app.Configuration["Oidc:Authority"]!)
+    .GetLeftPart(UriPartial.Authority);
+// Only load resources from this site; no framing (clickjacking), no plugins.
+// Forms may only submit here, or redirect to Keycloak (logout).
+var contentSecurityPolicy = "default-src 'self'; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; "
+    + $"form-action 'self' {keycloakOrigin}";
+
+// Security headers that the DAST scan (ZAP baseline) reported missing.
+app.Use(async (context, next) =>
+{
+    var headers = context.Response.Headers;
+    headers.ContentSecurityPolicy = contentSecurityPolicy;
+    headers.XContentTypeOptions = "nosniff";
+    headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=(), payment=()";
+    headers["Cross-Origin-Opener-Policy"] = "same-origin";
+    headers["Cross-Origin-Embedder-Policy"] = "require-corp";
+    headers["Cross-Origin-Resource-Policy"] = "same-origin";
+    await next();
+});
 
 app.UseAuthentication();
 app.UseAuthorization();

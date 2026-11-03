@@ -1,0 +1,35 @@
+@page
+@model VulnTracker.Pages.DashboardModel
+@{
+    ViewData["Title"] = "Dashboard";
+}
+<h1>Dashboard</h1>
+<p>Open findings: <strong id="total-open">@Model.TotalOpen</strong></p>
+
+<h2>Open findings by severity</h2>
+<table id="by-severity">
+    <thead><tr><th>Severity</th><th>Count</th></tr></thead>
+    <tbody>
+        @foreach (var (severity, count) in Model.BySeverity)
+        {
+            <tr>
+                <td><a asp-page="/Index" asp-route-severity="@severity">@severity</a></td>
+                <td>@count</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<h2>Open findings by status</h2>
+<table id="by-status">
+    <thead><tr><th>Status</th><th>Count</th></tr></thead>
+    <tbody>
+        @foreach (var (status, count) in Model.ByStatus)
+        {
+            <tr>
+                <td><a asp-page="/Index" asp-route-status="@status">@status</a></td>
+                <td>@count</td>
+            </tr>
+        }
+    </tbody>
+</table>

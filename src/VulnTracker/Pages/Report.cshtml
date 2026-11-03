@@ -1,0 +1,46 @@
+@page
+@model VulnTracker.Pages.ReportModel
+@{
+    ViewData["Title"] = "Report a vulnerability";
+}
+<h1>Report a vulnerability</h1>
+
+@if (Model.Submitted)
+{
+    @* AUTH-03: acknowledgement. Doesn't show the finding id or any other finding data. *@
+    <p><strong>Thank you. We have received your report.</strong></p>
+    <p>Our security team will review it and contact you at the email address you gave us.</p>
+}
+else
+{
+    <p>Found a security problem in one of our products? Tell us here. You don't need an account.</p>
+    <form method="post">
+        <div asp-validation-summary="ModelOnly"></div>
+        <p>
+            <label asp-for="Input.Title"></label><br />
+            <input asp-for="Input.Title" size="60" />
+            <span asp-validation-for="Input.Title"></span>
+        </p>
+        <p>
+            <label asp-for="Input.Description"></label><br />
+            <textarea asp-for="Input.Description" rows="8" cols="60"></textarea>
+            <span asp-validation-for="Input.Description"></span>
+        </p>
+        <p>
+            <label asp-for="Input.AffectedAsset"></label><br />
+            <input asp-for="Input.AffectedAsset" />
+            <span asp-validation-for="Input.AffectedAsset"></span>
+        </p>
+        <p>
+            <label asp-for="Input.Severity"></label><br />
+            <select asp-for="Input.Severity" asp-items="Html.GetEnumSelectList<Severity>()"></select>
+            <span asp-validation-for="Input.Severity"></span>
+        </p>
+        <p>
+            <label asp-for="Input.ContactEmail"></label><br />
+            <input asp-for="Input.ContactEmail" type="email" />
+            <span asp-validation-for="Input.ContactEmail"></span>
+        </p>
+        <button type="submit">Send report</button>
+    </form>
+}
