@@ -1,4 +1,4 @@
-# Design (W39 – initial plan)
+# Design (W39 initial plan)
 
 ## Tech stack
 

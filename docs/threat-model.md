@@ -80,7 +80,7 @@ flowchart LR
 
 ### Attack tree
 
-Goal: **read the list of unpatched vulnerabilities.** Leaves marked ✔ are mitigated.
+Goal: **read the list of unpatched vulnerabilities.** Each leaf says whether it is mitigated.
 
 ```mermaid
 flowchart TD
@@ -89,20 +89,20 @@ flowchart TD
     goal --> b["Through the database"]
     goal --> c["Through the pipeline"]
 
-    a --> a1["No account: public form leaks data ✔ (form only creates)"]
-    a --> a2["No account: guess finding URLs ✔ (login required)"]
-    a --> a3["Developer: open other findings by id ✔ (ReBAC)"]
+    a --> a1["No account: public form leaks data (mitigated: form only creates)"]
+    a --> a2["No account: guess finding URLs (mitigated: login required)"]
+    a --> a3["Developer: open other findings by id (mitigated: ReBAC)"]
     a --> a4["Steal a staff session"]
-    a4 --> a41["XSS in finding text ✔ (Razor encoding, CSP)"]
-    a4 --> a42["Steal OIDC code ✔ (exact redirect URIs, PKCE)"]
-    a4 --> a43["Phish Keycloak password ✘ (MFA is stretch AUTH-05)"]
+    a4 --> a41["XSS in finding text (mitigated: Razor encoding, CSP)"]
+    a4 --> a42["Steal OIDC code (mitigated: exact redirect URIs, PKCE)"]
+    a4 --> a43["Phish Keycloak password (not mitigated: MFA is stretch AUTH-05)"]
 
-    b --> b1["Steal backup / disk ✔ (AES-GCM encryption)"]
-    b --> b2["SQL injection ✔ (EF Core parameters)"]
-    b --> b3["Steal backup AND key from same server ✘ (key on app host)"]
+    b --> b1["Steal backup / disk (mitigated: AES-GCM encryption)"]
+    b --> b2["SQL injection (mitigated: EF Core parameters)"]
+    b --> b3["Steal backup AND key from same server (not mitigated: key on app host)"]
 
-    c --> c1["Malicious dependency reads data ✔ (SCA, SBOM scan) - partial"]
-    c --> c2["Push malicious code to main ✘ until branch protection is on"]
+    c --> c1["Malicious dependency reads data (partly mitigated: SCA, SBOM scan)"]
+    c --> c2["Push malicious code to main (not mitigated until branch protection is on)"]
 ```
 
 ## 3. What are we going to do about it?
@@ -110,24 +110,24 @@ flowchart TD
 | # | Mitigation | Status |
 |---|---|---|
 | T1 | The email is only contact info and is never trusted for access. Triage verifies the report. | Accepted |
-| T2 | Forms bind to input models with only allowed fields. | ✅ Implemented, tested |
-| T3 | Rate limiting / CAPTCHA on the public form. | ❌ Not implemented. Accepted risk for the exam scope; the first thing to add before going live. |
-| T4 | Acknowledgement shows no finding data. Production has no developer error page. | ✅ Implemented, tested |
-| T5 | Session cookie is HttpOnly and encrypted by ASP.NET Data Protection. Production must use HTTPS. | ✅ (HTTPS is a deployment requirement) |
-| T6 | ReBAC rule on details/edit pages and on list/dashboard queries. | ✅ Implemented, tested |
-| T7 | Role policies plus ABAC rule for *Accepted Risk*. Fallback policy requires login. Users without a role get nothing. | ✅ Implemented, tested |
-| T8 | Antiforgery tokens on every POST. Logout is POST-only. | ✅ Implemented |
-| T9 | CSP `frame-ancestors 'none'`. | ✅ Implemented, checked by ZAP |
-| T10 | Razor HTML-encodes output. CSP `default-src 'self'` blocks injected scripts. | ✅ Implemented, checked by ZAP |
-| T11 | Authorization code flow with PKCE, client secret, exact redirect URIs in Keycloak. | ✅ Implemented |
-| T12 | Audit log (AUDIT-01). | ❌ Not implemented (SHOULD, outside solo scope). Known gap. |
-| T13 | No developer exception page outside Development. | ✅ ASP.NET default |
-| T14 | AES-256-GCM encryption of title, description, reporter email. | ✅ Implemented, tested. See [cryptography.md](cryptography.md) |
-| T15 | GCM authentication tag. The column name is bound to the ciphertext. | ✅ Implemented, tested. Moving whole rows is not detected. |
-| T16 | EF Core parameterized queries. No raw SQL in the app. SAST (Semgrep) in CI. | ✅ Implemented |
-| T17 | Keys from environment variables / secret store in production, never the database. Dev key only in dev config. | ✅ Documented in [cryptography.md](cryptography.md) |
-| T18 | SCA (`dotnet list package --vulnerable`), SBOM (Syft) and Grype scan of the image before it's pushed. | ✅ In CI |
-| T19 | Branch protection on `main` with required status checks and PR reviews. | ⚠️ GitHub setting the repo owner must turn on (see README) |
+| T2 | Forms bind to input models with only allowed fields. | Implemented, tested |
+| T3 | Rate limiting / CAPTCHA on the public form. | Not implemented. Accepted risk for the exam scope; the first thing to add before going live. |
+| T4 | Acknowledgement shows no finding data. Production has no developer error page. | Implemented, tested |
+| T5 | Session cookie is HttpOnly and encrypted by ASP.NET Data Protection. Production must use HTTPS. | Implemented (HTTPS is a deployment requirement) |
+| T6 | ReBAC rule on details/edit pages and on list/dashboard queries. | Implemented, tested |
+| T7 | Role policies plus ABAC rule for *Accepted Risk*. Fallback policy requires login. Users without a role get nothing. | Implemented, tested |
+| T8 | Antiforgery tokens on every POST. Logout is POST-only. | Implemented |
+| T9 | CSP `frame-ancestors 'none'`. | Implemented, checked by ZAP |
+| T10 | Razor HTML-encodes output. CSP `default-src 'self'` blocks injected scripts. | Implemented, checked by ZAP |
+| T11 | Authorization code flow with PKCE, client secret, exact redirect URIs in Keycloak. | Implemented |
+| T12 | Audit log (AUDIT-01). | Not implemented (SHOULD, outside solo scope). Known gap. |
+| T13 | No developer exception page outside Development. | ASP.NET default |
+| T14 | AES-256-GCM encryption of title, description, reporter email. | Implemented, tested. See [cryptography.md](cryptography.md) |
+| T15 | GCM authentication tag. The column name is bound to the ciphertext. | Implemented, tested. Moving whole rows is not detected. |
+| T16 | EF Core parameterized queries. No raw SQL in the app. SAST (Semgrep) in CI. | Implemented |
+| T17 | Keys from environment variables / secret store in production, never the database. Dev key only in dev config. | Documented in [cryptography.md](cryptography.md) |
+| T18 | SCA (`dotnet list package --vulnerable`), SBOM (Syft) and Grype scan of the image before it's pushed. | In CI |
+| T19 | Branch protection on `main` with required status checks and PR reviews. | Not yet: a GitHub repository setting the owner has to turn on |
 | T20 | Out of scope for this project (run Keycloak highly available in production). | Accepted |
 
 ### Limits of this threat model

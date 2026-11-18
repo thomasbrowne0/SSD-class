@@ -1,6 +1,6 @@
 # Cryptography and key management (W44)
 
-> "Your vulnerability tracker is essentially a repository of unpatched vulnerabilities waiting for attackers to exploit." – W44
+> "Your vulnerability tracker is essentially a repository of unpatched vulnerabilities waiting for attackers to exploit." (W44 lecture page)
 
 Following defense in depth, finding data is encrypted in the database. It is still protected if the
 database, a backup or a disk is stolen.
@@ -9,10 +9,10 @@ database, a backup or a disk is stolen.
 
 | Field | Encrypted | Why |
 |---|---|---|
-| Title | ✅ | Often names the vulnerability ("SQL injection in login"). |
-| Description | ✅ | The details and steps to reproduce: the most dangerous part. |
-| ReporterEmail | ✅ | Personal data (GDPR). |
-| AffectedAsset, Severity, Status, dates, assignee | ❌ | Needed in SQL for filters (FIND-05) and the dashboard (FR-RPT-01). Trade-off: an attacker with the database learns *which asset* has *how severe* an open problem, but not what it is. |
+| Title | Yes | Often names the vulnerability ("SQL injection in login"). |
+| Description | Yes | The details and steps to reproduce: the most dangerous part. |
+| ReporterEmail | Yes | Personal data (GDPR). |
+| AffectedAsset, Severity, Status, dates, assignee | No | Needed in SQL for filters (FIND-05) and the dashboard (FR-RPT-01). Trade-off: an attacker with the database learns *which asset* has *how severe* an open problem, but not what it is. |
 
 ## How
 
