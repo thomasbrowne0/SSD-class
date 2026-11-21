@@ -79,6 +79,7 @@ flowchart LR
 | T20 | P2 Keycloak | **D**enial of service | Keycloak down, so nobody can log in. |
 | T21 | F2 page requests | **E**levation of privilege | A user who was disabled or lost a role in Keycloak keeps using an old app session. |
 | T22 | P1 web app | **I**nformation disclosure | A forged Host header makes the login fail, and the error shows a stack trace. |
+| T23 | F6 SQL | **E**levation of privilege | An attacker who takes over the app uses its database account to control the whole database server. |
 
 ### Attack tree
 
@@ -133,6 +134,7 @@ flowchart TD
 | T20 | Out of scope for this project (run Keycloak highly available in production). | Accepted |
 | T21 | App session lasts 30 minutes and is not renewed, so the user goes back through Keycloak, which refuses disabled users and reads current roles. | Implemented, tested. Up to 30 minutes delay. |
 | T22 | `AllowedHosts` only accepts the app's own host name; anything else gets a 400. | Implemented, tested |
+| T23 | The app connects with its own account (`db/init/01-app-user.sql`): not a superuser, can't create databases or roles, owns only the app's database. | Implemented, checked by hand: `COPY ... TO PROGRAM` and `CREATE DATABASE` are refused |
 
 ### Security audit after the build
 
@@ -147,6 +149,13 @@ Of the low findings, brute-force protection was turned on in the Keycloak realm 
 the account temporarily. Low and info findings that are not fixed: no password policy in the Keycloak realm file,
 dev secrets in the repository, no HTTPS enforcement inside the app (left to the deployment), no audit log (T12),
 and that the details page answers 404 or 403 depending on whether a finding id exists.
+
+### Cross-check against the pentest phases
+
+Before the W48 pentest we went through the phases of a pentest (information gathering, vulnerability assessment,
+exploitation, post-exploitation, lateral movement, reporting) from the attacker's side. This found that the app used
+the database superuser, which would make moving from a compromised app to the whole database server easy (T23).
+It now uses its own limited account.
 
 ### Limits of this threat model
 

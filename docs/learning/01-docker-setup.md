@@ -34,11 +34,16 @@ database and Keycloak report healthy before it starts.
 **compose.yaml**:
 
 - Lines 4-9: Postgres, port bound to `127.0.0.1` only, so other machines on the network can't reach it.
-- Lines 18-19: Keycloak runs `start-dev --import-realm`, which imports every JSON file in
+- Line 13: mounts `db/init`. Postgres runs the SQL in it once, when the database is created. It creates the app's own
+  account `vulntracker`, which is not a superuser and only owns the app's database (line 42 uses it). If the app were
+  taken over, the attacker can't use superuser features like running shell commands through the database
+  (`COPY ... TO PROGRAM`), can't create databases or roles, and can't touch other databases. This came from cross-checking
+  the project against the pentest phases (lateral movement).
+- Lines 20-21: Keycloak runs `start-dev --import-realm`, which imports every JSON file in
   `/opt/keycloak/data/import`. The `keycloak/` folder is mounted there.
-- Lines 24-25: `KC_HOSTNAME` tells Keycloak that browsers reach it on `localhost:8080`.
+- Lines 26-27: `KC_HOSTNAME` tells Keycloak that browsers reach it on `localhost:8080`.
   `KC_HOSTNAME_BACKCHANNEL_DYNAMIC` lets the app container reach it as `keycloak:8080` at the same time.
-- Lines 41-42: the app talks to Keycloak on `keycloak:8080` (`Oidc__Authority`), but the browser uses
+- Lines 43-44: the app talks to Keycloak on `keycloak:8080` (`Oidc__Authority`), but the browser uses
   `localhost:8080` (`Oidc__BrowserAuthority`, used for the CSP header, see file 09).
 
 **keycloak/vulntracker-realm.json**:
@@ -74,6 +79,9 @@ machine, and everyone builds with exactly the same SDK version.
 
 **Why bind ports to 127.0.0.1?** So the database and Keycloak are only reachable from this machine,
 not from the network.
+
+**Why doesn't the app use the postgres superuser?** Least privilege. The superuser can do anything on the database
+server, including running shell commands. The app only needs to read and write its own tables and run migrations.
 
 **Are the passwords in compose.yaml a problem?** They are dev values. In a real deployment they come from
 environment variables or a secret store (see the README and `docs/cryptography.md`).

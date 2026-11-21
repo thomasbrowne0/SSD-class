@@ -22,6 +22,8 @@ public class AppCollection : ICollectionFixture<TestAppFactory>
 }
 
 // Uses a separate database so tests don't touch dev data. Needs Postgres running (docker compose up -d db).
+// Tests connect as the postgres superuser because they create the test database themselves. The app uses its own
+// limited account (db/init/01-app-user.sql).
 // Replaces Keycloak login with a fake scheme, so tests can pick the user and roles per request.
 public class TestAppFactory : WebApplicationFactory<Program>
 {

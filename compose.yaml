@@ -9,6 +9,8 @@ services:
       - "127.0.0.1:5432:5432"
     volumes:
       - db-data:/var/lib/postgresql
+      # Creates the app's own limited database account on first start.
+      - ./db/init:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "postgres"]
       interval: 5s
@@ -37,7 +39,7 @@ services:
     build: .
     environment:
       ASPNETCORE_ENVIRONMENT: Development
-      ConnectionStrings__Default: "Host=db;Port=5432;Database=vulntracker;Username=postgres;Password=postgres"
+      ConnectionStrings__Default: "Host=db;Port=5432;Database=vulntracker;Username=vulntracker;Password=vulntracker-dev"
       Oidc__Authority: "http://keycloak:8080/realms/vulntracker"
       Oidc__BrowserAuthority: "http://localhost:8080/realms/vulntracker"
     ports:

@@ -35,7 +35,8 @@ To stop it:
 docker compose down
 ```
 
-Add `-v` to also delete the database.
+Add `-v` to also delete the database. If you ran an older version of this project before, run `docker compose down -v`
+once, so the database is created again with the app's own account.
 
 ## Test users
 
@@ -84,7 +85,8 @@ dotnet test
 The passwords, client secret and encryption key in this repo (`compose.yaml`, `appsettings.Development.json`,
 the realm file) are for local development only. In a real deployment they are set with environment variables:
 
-- `ConnectionStrings__Default`
+- `ConnectionStrings__Default`. The app uses its own database account `vulntracker`, not the postgres superuser.
+  `db/init/01-app-user.sql` creates it when the database is first created.
 - `Oidc__Authority` and `Oidc__ClientSecret`
 - `Encryption__CurrentKeyId` and `Encryption__Keys__<id>` (base64, 32 bytes)
 - `AllowedHosts`, the host name the app is served on (only `localhost` is accepted by default)
