@@ -33,15 +33,20 @@ Some terms:
 
 **src/VulnTracker/Program.cs**
 
-- Lines 18-23: two authentication schemes. The cookie keeps the session (`DefaultScheme`). OIDC is used when a
+- Lines 20-25: two authentication schemes. The cookie keeps the session (`DefaultScheme`). OIDC is used when a
   user who isn't logged in needs to be sent to the login page (`DefaultChallengeScheme`).
-- Lines 27-30: Keycloak address, client id and client secret come from configuration.
-- Line 31: `ResponseType = Code` selects the authorization code flow.
-- Line 33: `SaveTokens = true` keeps the ID token, which logout needs (see below).
-- Lines 35-37: keep the claim names as Keycloak sends them, use `preferred_username` as the name and `roles` as roles.
+- Lines 26-33: the session cookie lasts 30 minutes and is not renewed while the user is active
+  (`SlidingExpiration = false`). After that the user goes back through Keycloak. If their Keycloak session is
+  still valid this happens without typing a password, and the roles are read again. A user who was disabled or
+  lost a role in Keycloak is refused. The default would have been 14 days, renewed on every request, so a
+  removed employee could have kept access. This was a finding from our security audit.
+- Lines 36-39: Keycloak address, client id and client secret come from configuration.
+- Line 40: `ResponseType = Code` selects the authorization code flow.
+- Line 42: `SaveTokens = true` keeps the ID token, which logout needs (see below).
+- Lines 44-46: keep the claim names as Keycloak sends them, use `preferred_username` as the name and `roles` as roles.
   This is why `User.IsInRole("analyst")` works later.
-- Line 39: require HTTPS for Keycloak's metadata everywhere except Development.
-- Lines 41-42: after a successful login, save the user to our `Users` table (see file 05).
+- Line 48: require HTTPS for Keycloak's metadata everywhere except Development.
+- Lines 50-51: after a successful login, save the user to our `Users` table (see file 05).
 
 **keycloak/vulntracker-realm.json**
 
@@ -60,7 +65,9 @@ Some terms:
 
 The tests replace Keycloak with a fake login scheme (`tests/VulnTracker.Tests/TestAppFactory.cs`), because
 tests shouldn't depend on a running Keycloak. `FindingsPageTests.Index_requires_login` checks that a user
-without a session is rejected. The real Keycloak login was tested by hand in the browser with every test user.
+without a session is rejected, and
+`SecurityFixesTests.Session_is_short_and_not_renewed_so_keycloak_changes_take_effect` checks the 30-minute session.
+The real Keycloak login was tested by hand in the browser with every test user.
 
 ## Try it yourself
 
@@ -78,6 +85,10 @@ only goes to an exact redirect URI, and needs both the client secret and the PKC
 
 **What is the difference between authentication and authorization?** Authentication is "who are you" (Keycloak).
 Authorization is "what are you allowed to do" (our policies, file 03).
+
+**If an employee is removed in Keycloak, when do they lose access to the app?** Within 30 minutes. The app's own
+session is short and not renewed, so the user has to go back through Keycloak, which refuses a disabled user.
+Keycloak back-channel logout would make it instant.
 
 **Why `MapInboundClaims = false`?** By default .NET renames claims to long Microsoft URIs. Turning that off keeps
 `sub` and `roles` as Keycloak sends them.

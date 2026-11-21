@@ -77,6 +77,8 @@ flowchart LR
 | T18 | D3 dependencies | **T**ampering | Vulnerable or malicious package or base image (supply chain). |
 | T19 | P3/D4 pipeline | **T**ampering | Unreviewed code pushed straight to `main` and deployed. |
 | T20 | P2 Keycloak | **D**enial of service | Keycloak down, so nobody can log in. |
+| T21 | F2 page requests | **E**levation of privilege | A user who was disabled or lost a role in Keycloak keeps using an old app session. |
+| T22 | P1 web app | **I**nformation disclosure | A forged Host header makes the login fail, and the error shows a stack trace. |
 
 ### Attack tree
 
@@ -111,7 +113,7 @@ flowchart TD
 |---|---|---|
 | T1 | The email is only contact info and is never trusted for access. Triage verifies the report. | Accepted |
 | T2 | Forms bind to input models with only allowed fields. | Implemented, tested |
-| T3 | Rate limiting / CAPTCHA on the public form. | Not implemented. Accepted risk for the exam scope; the first thing to add before going live. |
+| T3 | Rate limit on the public form: 5 submissions per IP per 10 minutes. | Implemented, tested. An attacker with many IPs gets around it; a CAPTCHA would be next. |
 | T4 | Acknowledgement shows no finding data. Production has no developer error page. | Implemented, tested |
 | T5 | Session cookie is HttpOnly and encrypted by ASP.NET Data Protection. Production must use HTTPS. | Implemented (HTTPS is a deployment requirement) |
 | T6 | ReBAC rule on details/edit pages and on list/dashboard queries. | Implemented, tested |
@@ -129,6 +131,21 @@ flowchart TD
 | T18 | SCA (`dotnet list package --vulnerable`), SBOM (Syft) and Grype scan of the image before it's pushed. | In CI |
 | T19 | Branch protection on `main` with required status checks and PR reviews. | Not yet: a GitHub repository setting the owner has to turn on |
 | T20 | Out of scope for this project (run Keycloak highly available in production). | Accepted |
+| T21 | App session lasts 30 minutes and is not renewed, so the user goes back through Keycloak, which refuses disabled users and reads current roles. | Implemented, tested. Up to 30 minutes delay. |
+| T22 | `AllowedHosts` only accepts the app's own host name; anything else gets a 400. | Implemented, tested |
+
+### Security audit after the build
+
+After the project was built we ran a security audit with a Claude security review skill, then checked each finding
+against the code ourselves. Nothing critical or high was found. The three medium findings were fixed, each with a test:
+
+- Sessions lived 14 days and were renewed on use, so removing a user in Keycloak didn't lock them out (T21).
+- Any Host header was accepted, which could trigger an error page with a stack trace (T22).
+- The public report form had no rate limit (T3).
+
+Low and info findings that are not fixed: no brute-force protection or password policy in the Keycloak realm file,
+dev secrets in the repository, no HTTPS enforcement inside the app (left to the deployment), no audit log (T12),
+and that the details page answers 404 or 403 depending on whether a finding id exists.
 
 ### Limits of this threat model
 

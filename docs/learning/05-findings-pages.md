@@ -25,7 +25,7 @@ Only id and username are stored (data minimisation).
 **src/VulnTracker/Data/Finding.cs**: the finding with the spec's fields plus source, assignee and due date.
 
 **src/VulnTracker/Data/AppUser.cs**: lines 18-37 save or update the user on every login. Called from
-`Program.cs` lines 41-42.
+`Program.cs` lines 50-51.
 
 **src/VulnTracker/Pages/Findings/Inputs.cs**: the form models.
 

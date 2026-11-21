@@ -34,7 +34,7 @@ The last gate in W40, branch protection with pull request reviews, is a GitHub r
 **.zap/rules.tsv**: the ZAP alerts we accept, each with a reason. For example, the SameSite=None cookie is the OIDC
 correlation cookie, which has to be sent when Keycloak posts back to us.
 
-**Security headers** (`src/VulnTracker/Program.cs` lines 55-75). ZAP found these missing the first time it ran,
+**Security headers** (`src/VulnTracker/Program.cs` lines 82-102). ZAP found these missing the first time it ran,
 so we added them:
 
 - `Content-Security-Policy`: only load scripts and styles from our own site (blocks injected scripts),
@@ -42,6 +42,11 @@ so we added them:
 - `X-Content-Type-Options: nosniff`: the browser must trust our content type.
 - `Permissions-Policy`: turn off camera, microphone, location and payment.
 - `Cross-Origin-*-Policy`: keep other sites from embedding or reading our pages.
+
+**Host header filtering** (`src/VulnTracker/appsettings.json`, `AllowedHosts`). Only requests for `localhost` are
+accepted. Before, any Host header was accepted, and the login code built Keycloak's redirect URI from it. Keycloak
+refused the unknown URI, and the app answered with a 500 and a stack trace. Now a foreign Host gets a plain 400. In a
+real deployment, `AllowedHosts` is set to the real domain. This was a finding from our security audit.
 
 ## How it's tested
 

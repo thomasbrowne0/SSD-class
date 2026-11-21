@@ -31,6 +31,9 @@ public class TestAppFactory : WebApplicationFactory<Program>
         {
             ["ConnectionStrings:Default"] =
                 "Host=localhost;Port=5432;Database=vulntracker_test;Username=postgres;Password=postgres",
+            // All test requests share one IP, so the report form limit is raised here.
+            // SecurityFixesTests checks the limit itself.
+            ["RateLimiting:ReportsPerWindow"] = "1000",
         }));
 
         builder.ConfigureTestServices(services => services

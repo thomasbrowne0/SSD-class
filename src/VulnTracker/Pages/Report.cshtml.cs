@@ -2,14 +2,19 @@ using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.RateLimiting;
 using VulnTracker.Data;
 
 namespace VulnTracker.Pages;
 
 // AUTH-03 / FIND-02: public form for external reporters. It can only create findings, never read them.
 [AllowAnonymous]
+[EnableRateLimiting(RateLimitPolicy)]
 public class ReportModel(AppDbContext db) : PageModel
 {
+    // Limits submissions per IP, see Program.cs.
+    public const string RateLimitPolicy = "report";
+
     [BindProperty]
     public ReportInput Input { get; set; } = new();
 

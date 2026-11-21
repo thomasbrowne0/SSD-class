@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
+using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using VulnTracker.Authorization;
 using VulnTracker.Data;
+using VulnTracker.Pages;
 using VulnTracker.Security;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -21,7 +23,14 @@ builder.Services
         options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
         options.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
     })
-    .AddCookie(options => options.AccessDeniedPath = "/AccessDenied")
+    .AddCookie(options =>
+    {
+        options.AccessDeniedPath = "/AccessDenied";
+        // Short, fixed session: after 30 minutes the user goes back through Keycloak, so a disabled
+        // user or a removed role takes effect (the default is 14 days, renewed on every request).
+        options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
+        options.SlidingExpiration = false;
+    })
     .AddOpenIdConnect(options =>
     {
         var oidc = builder.Configuration.GetSection("Oidc");
@@ -44,6 +53,24 @@ builder.Services
 
 // AUTH-02: access control rules are in the Authorization folder.
 builder.Services.AddVulnTrackerAuthorization();
+
+// The public report form can't be flooded: a limited number of submissions per IP address per 10 minutes.
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.AddPolicy(ReportModel.RateLimitPolicy, context =>
+    {
+        if (!HttpMethods.IsPost(context.Request.Method))
+        {
+            return RateLimitPartition.GetNoLimiter("read");
+        }
+        var permitLimit = context.RequestServices.GetRequiredService<IConfiguration>()
+            .GetValue("RateLimiting:ReportsPerWindow", 5);
+        return RateLimitPartition.GetFixedWindowLimiter(
+            context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            _ => new FixedWindowRateLimiterOptions { PermitLimit = permitLimit, Window = TimeSpan.FromMinutes(10) });
+    });
+});
 
 var app = builder.Build();
 
@@ -76,6 +103,7 @@ app.Use(async (context, next) =>
 
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseRateLimiter();
 
 app.MapRazorPages();
 

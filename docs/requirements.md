@@ -83,5 +83,5 @@ Based on the OWASP Top 10 Proactive Controls (2024), C1-C10.
 | A8 | As an **attacker**, I want to trick a logged-in analyst's browser into submitting a form (CSRF), so that findings get closed. | Antiforgery token on every POST. Logout is POST-only. | All form tests post with a token |
 | A9 | As an **attacker**, I want to frame the app on my site (clickjacking), so that an analyst clicks "Save" without knowing. | CSP `frame-ancestors 'none'`. | ZAP DAST gate |
 | A10 | As an **attacker**, I want to steal the OIDC authorization code with a malicious redirect URI, so that I can log in as the victim. | Keycloak allows only exact redirect URIs. PKCE is required. | Verified manually: Keycloak rejected a wrong host |
-| A11 | As an **attacker**, I want to flood the public form, so that real reports drown or the database fills. | **Not mitigated** (no rate limiting). Accepted risk for the exam scope. See threat model. | - |
+| A11 | As an **attacker**, I want to flood the public form, so that real reports drown or the database fills. | Rate limit: 5 submissions per IP address per 10 minutes. | `Report_form_is_rate_limited` |
 | A12 | As an **attacker**, I want to slip a malicious package into a dependency, so that my code runs in the app. | SCA in CI, SBOM + Grype scan of the image before push. | CI gates |

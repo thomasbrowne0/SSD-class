@@ -83,6 +83,7 @@ the realm file) are for local development only. In a real deployment they are se
 - `ConnectionStrings__Default`
 - `Oidc__Authority` and `Oidc__ClientSecret`
 - `Encryption__CurrentKeyId` and `Encryption__Keys__<id>` (base64, 32 bytes)
+- `AllowedHosts`, the host name the app is served on (only `localhost` is accepted by default)
 
 How the encryption keys are handled is described in [docs/cryptography.md](docs/cryptography.md).
 

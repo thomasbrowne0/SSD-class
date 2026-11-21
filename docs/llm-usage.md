@@ -52,7 +52,9 @@ This project followed the workflow above, with these differences:
   we downloaded it, and the roadmap was updated to match it before the features were built.
 - **Design and threat model written after the code.** The architecture was decided early (ASP.NET Razor Pages, PostgreSQL, Keycloak, Docker),
   but `design.md`, `requirements.md` and `threat-model.md` were written after most of the code. They describe the system as it is built.
-- **No Claude review skills.** Instead of review skills, we checked the code with tests and security tools in CI (see the next section).
+- **Review skill run at the end.** During the build the code was checked with tests and security tools in CI. After the
+  build we ran a Claude security audit skill over the whole project. It found three medium issues, which we fixed with tests
+  (see the [threat model](threat-model.md#security-audit-after-the-build)).
 - **Learning files after the build.** The roadmap and a summary of each week's concepts are kept as personal study notes
   outside the repository. The learning files, one per requirement, were written after the project was built. They are in
   [docs/learning](learning/README.md), and every code reference in them was checked against the actual code.
@@ -62,7 +64,7 @@ This project followed the workflow above, with these differences:
 - **Requirements are traceable.** Every spec requirement ID is mapped to the code that implements it in [requirements.md](requirements.md).
 - **Facts checked against sources, not memory.** Library and tool versions were looked up when used. The OWASP Top 10 list was taken from
   the official site. The teacher's example repositories and course pages were used for the Keycloak and Docker setup.
-- **Automated tests.** 99 tests, including every access rule tested against every role, the report form, the dashboard and the encryption.
+- **Automated tests.** 102 tests, including every access rule tested against every role, the report form, the dashboard and the encryption.
   To make sure the tests really catch mistakes, access rules were broken on purpose and we checked that the tests failed.
 - **Security gates in CI.** Every push runs a dependency check for known vulnerabilities, Semgrep static analysis and an OWASP ZAP scan
   of the running app. Images are only pushed after an SBOM is generated with Syft and scanned with Grype.
@@ -70,4 +72,6 @@ This project followed the workflow above, with these differences:
   listed with a reason in `.zap/rules.tsv`.
 - **Manual checks.** We clicked through the app in a browser as each test user, and tested the Docker setup from a fresh clone the same way
   the pentest group will.
-- **Known gaps are written down.** No audit log and no rate limiting on the public form. Both are in the [threat model](threat-model.md).
+- **Security audit, then fixes with tests.** A Claude security audit skill reviewed the finished project. We checked each finding
+  against the code before acting on it. For each fix we added a test, and checked that the test fails when the fix is removed.
+- **Known gaps are written down.** For example, there is no audit log. The gaps are in the [threat model](threat-model.md).

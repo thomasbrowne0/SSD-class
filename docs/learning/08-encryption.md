@@ -44,7 +44,7 @@ is written down in `docs/cryptography.md`.
 - Lines 29-35: an Entity Framework value converter. EF calls `Encrypt` when saving and `Decrypt` when loading, so no
   page can forget to encrypt.
 
-**src/VulnTracker/Program.cs** line 13: the encryptor is created once from configuration.
+**src/VulnTracker/Program.cs** line 15: the encryptor is created once from configuration.
 
 ## Key management
 
