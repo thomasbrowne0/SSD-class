@@ -43,8 +43,8 @@ database and Keycloak report healthy before it starts.
 
 **keycloak/vulntracker-realm.json**:
 
-- Lines 50, 60, 70, 80: the four test users, one per role. Password = username.
-- Line 19: the client secret (dev value only).
+- Lines 52, 62, 72, 82: the four test users, one per role. Password = username.
+- Line 21: the client secret (dev value only).
 
 ## How it's tested
 

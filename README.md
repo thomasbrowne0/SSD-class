@@ -56,6 +56,10 @@ assigned to them, and auditors can read everything but change nothing. The full 
 A user has to log in once before findings can be assigned to them, because the app saves users the
 first time they log in.
 
+Keycloak has brute-force protection on: after 5 wrong passwords the account is locked for a while (1 minute at first,
+longer after repeated lockouts, at most 15 minutes). An admin can unlock it in the Keycloak admin console under
+Users > the user > Brute force.
+
 ## Running without Docker
 
 Needs the .NET 10 SDK. Start the database and Keycloak in Docker, then run the app:

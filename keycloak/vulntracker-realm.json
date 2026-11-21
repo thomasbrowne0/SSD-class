@@ -1,6 +1,8 @@
 {
   "realm": "vulntracker",
   "enabled": true,
+  "bruteForceProtected": true,
+  "failureFactor": 5,
   "roles": {
     "realm": [
       { "name": "analyst" },

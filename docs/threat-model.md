@@ -143,7 +143,8 @@ against the code ourselves. Nothing critical or high was found. The three medium
 - Any Host header was accepted, which could trigger an error page with a stack trace (T22).
 - The public report form had no rate limit (T3).
 
-Low and info findings that are not fixed: no brute-force protection or password policy in the Keycloak realm file,
+Of the low findings, brute-force protection was turned on in the Keycloak realm afterwards: 5 wrong passwords lock
+the account temporarily. Low and info findings that are not fixed: no password policy in the Keycloak realm file,
 dev secrets in the repository, no HTTPS enforcement inside the app (left to the deployment), no audit log (T12),
 and that the details page answers 404 or 403 depending on whether a finding id exists.
 

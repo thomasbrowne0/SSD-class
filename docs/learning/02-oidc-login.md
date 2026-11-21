@@ -50,10 +50,12 @@ Some terms:
 
 **keycloak/vulntracker-realm.json**
 
-- Lines 17-19: confidential client with a client secret.
-- Line 23: the exact allowed redirect URIs. Keycloak refuses to send a code anywhere else.
-- Line 29: PKCE with S256 is required.
-- Line 35: the realm role mapper that puts the user's roles into a `roles` claim in the ID token.
+- Lines 19-21: confidential client with a client secret.
+- Line 25: the exact allowed redirect URIs. Keycloak refuses to send a code anywhere else.
+- Line 31: PKCE with S256 is required.
+- Lines 4-5: brute-force protection. After 5 wrong passwords the account is locked for at least a minute. Keycloak
+  still says "Invalid username or password", so an attacker can't tell a locked account from a wrong password.
+- Line 37: the realm role mapper that puts the user's roles into a `roles` claim in the ID token.
 
 **src/VulnTracker/Pages/Logout.cshtml.cs**
 
