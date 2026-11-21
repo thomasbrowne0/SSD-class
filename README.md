@@ -6,6 +6,11 @@ report form or scanners, get triaged and assigned, and are tracked until they ar
 
 Built with ASP.NET Core 10 (Razor Pages), PostgreSQL and Keycloak for login.
 
+## Use of LLMs
+
+Most of the code and documents were written with Claude (Claude Code). Which parts, how we worked with it
+and how we checked its output is described in [docs/llm-usage.md](docs/llm-usage.md).
+
 ## Running it
 
 You only need Docker (Docker Desktop on Windows/Mac). Restoring packages and building the app happens
@@ -96,6 +101,7 @@ GitHub Actions ([ci.yml](.github/workflows/ci.yml)) runs on every push and pull 
 - [Design: tech stack, architecture and user stories](docs/design.md)
 - [Threat model](docs/threat-model.md)
 - [Cryptography and key management](docs/cryptography.md)
+- [Use of LLMs and agents](docs/llm-usage.md)
 
 ## Database changes
 
