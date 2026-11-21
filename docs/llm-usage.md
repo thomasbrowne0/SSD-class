@@ -53,8 +53,9 @@ This project followed the workflow above, with these differences:
 - **Design and threat model written after the code.** The architecture was decided early (ASP.NET Razor Pages, PostgreSQL, Keycloak, Docker),
   but `design.md`, `requirements.md` and `threat-model.md` were written after most of the code. They describe the system as it is built.
 - **No Claude review skills.** Instead of review skills, we checked the code with tests and security tools in CI (see the next section).
-- **Study notes instead of learning files.** We made a roadmap and a summary of each week's concepts, kept as personal study notes
-  outside the repository. We didn't write a `learning.md` per requirement.
+- **Learning files after the build.** The roadmap and a summary of each week's concepts are kept as personal study notes
+  outside the repository. The learning files, one per requirement, were written after the project was built. They are in
+  [docs/learning](learning/README.md), and every code reference in them was checked against the actual code.
 
 ## How we ensured quality and security
 

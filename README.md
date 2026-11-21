@@ -102,6 +102,7 @@ GitHub Actions ([ci.yml](.github/workflows/ci.yml)) runs on every push and pull 
 - [Threat model](docs/threat-model.md)
 - [Cryptography and key management](docs/cryptography.md)
 - [Use of LLMs and agents](docs/llm-usage.md)
+- [Learning files, one per requirement](docs/learning/README.md)
 
 ## Database changes
 
